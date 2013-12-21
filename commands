@@ -35,14 +35,9 @@ case "$1" in
     else
         VOLUME="/opt/postgresql"
         # Generate a random password for DB user
+        DB_USERNAME=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 16)
         DB_PASSWORD=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 16)
-        # Temporarily store it to a file
-        if [[ ! -d $DOKKU_ROOT/.postgresql ]]; then
-            mkdir -p $DOKKU_ROOT/.postgresql
-            chown -R dokku: $DOKKU_ROOT/.postgresql
-        fi
-        echo $DB_PASSWORD > "$DOKKU_ROOT/.postgresql/pwd_$APP"
-        chown dokku: "$DOKKU_ROOT/.postgresql/pwd_$APP"
+        dokku config:set $APP PG_USERNAME=$DB_USERNAME PG_PASSWORD=$DB_PASSWORD
     fi
     # Fork DB image
     ID=$(docker run -d totallymike/postgresql exit 0)
@@ -50,7 +45,7 @@ case "$1" in
     IMAGE=$(docker commit $ID)
     docker tag $IMAGE $DB_IMAGE
     # Launch container
-    ID=$(docker run -v $VOLUME -p 5432 -d $DB_IMAGE /usr/bin/start_pgsql.sh $DB_PASSWORD)
+    ID=$(docker run -v $VOLUME -p 5432 -d $DB_IMAGE)
     sleep 4
     # Rename persistent volume
     if [[ ! -d "/var/lib/docker/volumes/postgresql-$APP" ]]; then
