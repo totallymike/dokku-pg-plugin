@@ -29,11 +29,11 @@ case "$1" in
     fi
     # Check if an existing DB volume exists
     if [[ -d "/var/lib/docker/volumes/postgresql-$APP" ]]; then
-        VOLUME="/var/lib/docker/volumes/postgresql-$APP/layer:/opt/postgresql"
+        VOLUME="/var/lib/docker/volumes/postgresql-$APP/layer:/var/lib/postgresql/9.2/main"
         echo
         echo "-----> Reusing postgresql/$APP database"
     else
-        VOLUME="/opt/postgresql"
+        VOLUME="/var/lib/postgresql/9.2/main"
         # Generate a random password for DB user
         DB_USERNAME=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 16)
         DB_PASSWORD=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 16)
