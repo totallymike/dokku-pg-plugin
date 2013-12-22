@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # Build docker image
-docker build -q=true -t totallymike/postgresql github.com/totallymike/dockerfile-postgresql
+docker build -q=true -t totallymike/postgresql github.com/totallymike/dokku-pg-dockerfiles
