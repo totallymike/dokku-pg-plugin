@@ -45,7 +45,9 @@ case "$1" in
     IMAGE=$(docker commit $ID)
     docker tag $IMAGE $DB_IMAGE
     # Launch container
-    ID=$(docker run -v $VOLUME -p 5432 -d $DB_IMAGE)
+    ID=$(docker start $DB_IMAGE)
+
+    ID=$(docker run -u postgres -v $VOLUME -p 5432 -d $DB_IMAGE /usr/local/pgsql/bin/postgres --single -D /var/lib/postgresql/9.2/main -c /etc/postgresql/9.2/main/postgresql.conf CREATE USER $DB_USERNAME WITH SUPERUSER PASSWORD '$DB_PASSWORD')
     sleep 4
     # Rename persistent volume
     if [[ ! -d "/var/lib/docker/volumes/postgresql-$APP" ]]; then
@@ -114,7 +116,7 @@ case "$1" in
         ID=$(docker ps -a | grep "$DB_IMAGE":latest |  awk '{print $1}')
         IP=$(docker inspect $ID | grep IPAddress | awk '{ print $2 }' | tr -d ',"')
         # Write DATABASE_URL to app's ENV file
-        URL="DATABASE_URL=postgres://root:$DB_PASSWORD@$IP/db"
+        URL="DATABASE_URL=postgres://$DB_USERNAME:$DB_PASSWORD@$IP/db"
         cat "$DOKKU_ROOT/$APP/ENV" | grep "$URL" || echo "export $URL" >> "$DOKKU_ROOT/$APP/ENV"
         echo
         echo "-----> $APP linked to $DB_IMAGE database"
